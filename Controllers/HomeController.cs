@@ -48,9 +48,13 @@ namespace TopTopServer.Controllers
             {
                 //var authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
                 var authenticator = await authProvider.SignInWithEmailAndPasswordAsync(email, password);
-                if (authenticator.FirebaseToken != "")
+                if (authenticator.User.IsEmailVerified)
                 {
                     return Ok();
+                }
+                else if (!authenticator.User.IsEmailVerified)
+                {
+                    return Unauthorized();
                 }
                 else
                 {
