@@ -36,6 +36,8 @@ namespace TopTopServer.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        private FirebaseAuthProvider authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
+
         [HttpPost]
         [Route("Login")]
         public async Task<IActionResult> Login()
@@ -44,7 +46,7 @@ namespace TopTopServer.Controllers
             var password = Request.Form["password"];
             try
             {
-                var authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
+                //var authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
                 var authenticator = await authProvider.SignInWithEmailAndPasswordAsync(email, password);
                 if (authenticator.FirebaseToken != "")
                 {
@@ -54,6 +56,23 @@ namespace TopTopServer.Controllers
                 {
                     return BadRequest();
                 }
+            }
+            catch (Exception ex)
+            {
+                // Info
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost]
+        [Route("ResetPassword")]
+        public async Task<IActionResult> ResetPassword()
+        {
+            var email = Request.Form["email"];
+            try
+            {
+                //var authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
+                await authProvider.SendPasswordResetEmailAsync(email);
+                return Ok();
             }
             catch (Exception ex)
             {
