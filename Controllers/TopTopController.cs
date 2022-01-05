@@ -18,6 +18,7 @@ namespace TopTopServer.Controllers
         {
             _context = context;
         }
+
         /*==============================================================================
                              GET A USER'S PROFILE BY EMAIL
         ================================================================================*/
@@ -29,117 +30,52 @@ namespace TopTopServer.Controllers
             {
                 var request = HttpContext.Request;
                 var email = Request.Form["email"];
+                //main Profile
                 var profile = await _context.Users.FindAsync(email);
-                if (profile != null)
-                    return Ok(profile);
-                else
-                    return NotFound();
-                
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-        }
-
-        /*==============================================================================
-                             GET USER'S NUMBERS STATISTED BY EMAIL
-        ================================================================================*/
-        [HttpPost]
-        [Route("GetUserNumbers")]
-        public async Task<IActionResult> GetUserNumbers()
-        {
-            try
-            {
-                int followCount, followingCount, likeCount = 0;
-                var request = HttpContext.Request;
-                var email = Request.Form["email"];
-                //like
-                var videos = await _context.Videos.ToListAsync();
-                likeCount = videos.Where(video => video.Owner == email).Sum(i => i.LikeCount);
-                //follow
-                var follows = await _context.Follows.ToListAsync();
-                followCount = follows.Where(follow => follow.Following == email).Count();
+                //follower
+                var followersList = await _context.Follows.ToListAsync();
+                var userFollowers = followersList.Where(follow => follow.Following == email);
+                var userFollowersProfiles = userFollowers.Join
+                    (
+                        _context.Users,
+                        follow => follow.Follower,
+                        user => user.Email,
+                        (follow,user) => user
+                    );
                 //following
-                followingCount = follows.Where(follow => follow.Follower == email).Count();
-                var response = JsonConvert.SerializeObject(new { Follow = followCount, Following = followingCount, Like = likeCount });
-                return Ok(response);
-
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-        }
-
-        /*==============================================================================
-                             GET A USER'S VIDEO LIST BY EMAIL
-        ================================================================================*/
-        [HttpPost]
-        [Route("GetUserVideoList")]
-        public async Task<IActionResult> GetUserVideoList()
-        {
-            try
-            {
-                var request = HttpContext.Request;
-                var email = Request.Form["email"];
+                var followingsList = await _context.Follows.ToListAsync();
+                var userFollowings = followingsList.Where(follow => follow.Follower == email);
+                var userFollowingsProfiles = userFollowings.Join
+                    (
+                        _context.Users,
+                        follow => follow.Following,
+                        user => user.Email,
+                        (follow, user) => user
+                    );
+                //like Count
+                var videos = await _context.Videos.ToListAsync();
+                var likeCount = videos.Where(video => video.Owner == email).Sum(i => i.LikeCount);
+                //user's video
                 var allVideos = await _context.Videos.ToListAsync();
-                var videoList = allVideos.Where(video => video.Owner == email);
-                if (videoList.FirstOrDefault() != null)
-                {
-                    return Ok(videoList);
-                }
-                else
-                {
-                    return NotFound();
-                }
-
-            }
-            catch (Exception)
-            {
-                return BadRequest();
-            }
-        }
-
-        /*==============================================================================
-                             GET A USER'S LIKED VIDEO LIST BY EMAIL
-        ================================================================================*/
-        [HttpPost]
-        [Route("GetUserLikedVideoList")]
-        public async Task<IActionResult> GetUserLikedVideoList()
-        {
-            try
-            {
-                var request = HttpContext.Request;
-                var email = Request.Form["email"];
-                var allVideos = await _context.Likes.ToListAsync();
-                var likedVideos = allVideos.Where(video => video.User == email);
+                var videosList = allVideos.Where(video => video.Owner == email);
+                //Liked video
+                var likesList = await _context.Likes.ToListAsync();
+                var likedVideos = likesList.Where(like => like.User == email);
                 var likedVideosWithDetails = likedVideos.Join
                     (
                         _context.Videos,
                         like => like.Video,
                         video => video.Url,
-                        (like, video) => new {video.Url,video.Owner,video.Title,video.LikeCount,video.CommentCount, video.UploadDate, video.IsPrivate}
-                    );
-                likedVideosWithDetails = likedVideosWithDetails.Where(video => video.IsPrivate == 0);
-                if (likedVideosWithDetails.FirstOrDefault() != null)
-                {
-                    return Ok(likedVideosWithDetails);
-                }
-                else
-                {
-                    return NotFound();
-                }
-
+                        (like, video) => video
+                    )
+                    .Where(video => video.IsPrivate == 0);
+                var response = JsonConvert.SerializeObject(new {MainProfile=profile, Followers=userFollowersProfiles, Followings=userFollowingsProfiles, LikeCount=likeCount, Videos=videosList, LikedVideos=likedVideosWithDetails });
+                return Ok(response);
             }
             catch (Exception)
             {
                 return BadRequest();
             }
-        }
-        public IActionResult Index()
-        {
-            return View();
         }
     }
 }

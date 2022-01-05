@@ -11,7 +11,6 @@ using TopTopServer.Models;
 
 namespace TopTopServer.Controllers
 {
-    [EnableCors("CorsPolicy")]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
