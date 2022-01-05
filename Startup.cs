@@ -25,6 +25,7 @@ namespace TopTopServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddCors(options => { options.AddPolicy("CorsPolicy", builder => builder.WithOrigins("*").AllowAnyHeader().AllowAnyMethod()); });
             services.AddDbContext<TopTopDBContext>(options => {
                 string connectstring = Configuration.GetConnectionString("TopTopDBContext");
                 options.UseSqlServer(connectstring);

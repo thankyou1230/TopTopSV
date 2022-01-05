@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +9,7 @@ using TopTopServer.Models;
 
 namespace TopTopServer.Controllers
 {
+    [EnableCors("CorsPolicy")]
     public class TopTopController : Controller
     {
         private readonly TopTopDBContext _context;
@@ -32,6 +35,36 @@ namespace TopTopServer.Controllers
                 else
                     return NotFound();
                 
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        /*==============================================================================
+                             GET USER'S NUMBERS STATISTED BY EMAIL
+        ================================================================================*/
+        [HttpPost]
+        [Route("GetUserNumbers")]
+        public async Task<IActionResult> GetUserNumbers()
+        {
+            try
+            {
+                int followCount, followingCount, likeCount = 0;
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                //like
+                var videos = await _context.Videos.ToListAsync();
+                likeCount = videos.Where(video => video.Owner == email).Sum(i => i.LikeCount);
+                //follow
+                var follows = await _context.Follows.ToListAsync();
+                followCount = follows.Where(follow => follow.Following == email).Count();
+                //following
+                followingCount = follows.Where(follow => follow.Follower == email).Count();
+                var response = JsonConvert.SerializeObject(new { Follow = followCount, Following = followingCount, Like = likeCount });
+                return Ok(response);
+
             }
             catch (Exception)
             {
