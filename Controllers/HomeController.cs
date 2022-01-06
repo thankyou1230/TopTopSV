@@ -84,39 +84,7 @@ namespace TopTopServer.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        [HttpPost]
-        [Route("SignUp")]
-        public async Task<IActionResult> SignUp()
-        {
-            var email = Request.Form["email"];
-            var password = Request.Form["password"];
-            var nickname = Request.Form["nickname"];
-            bool isConflict = false;
-            try
-            {
-                //var authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
-                await authProvider.CreateUserWithEmailAndPasswordAsync(email, password, nickname, true).ContinueWith(task => 
-                {
-                    if (task.IsFaulted)
-                    {
-                        isConflict = true;
-                    }
-
-                });
-                if (!isConflict)
-                {
-                    return Ok();
-                }
-                else
-                {
-                    return Conflict();
-                }    
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        
 
     }
 }
