@@ -11,6 +11,7 @@ using TopTopServer.Models;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.IO;
+using User = TopTopServer.Models.User;
 
 namespace TopTopServer.Controllers
 {
@@ -253,18 +254,21 @@ namespace TopTopServer.Controllers
                 var email = Request.Form["email"];
                 var result = _context.Videos.ToList().Where(video => video.Owner != email).OrderBy(video=>video.UploadDate);
                 var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
-                List<VideosWithLikeState> LikedVideosList = new List<VideosWithLikeState>();
+                var userList = _context.Users.ToList();
+                List<VideoWithOwnerDetails> LikedVideosList = new List<VideoWithOwnerDetails>();
                 foreach (Video video in result)
                 {
+                    User ownerDetails = userList.Where(user => user.Email == video.Owner).FirstOrDefault();
                     if (likedVideos.Where(liked => liked.Video == video.Url).Count() > 0)
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, "Red"));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "Red"), ownerDetails));
                     }
                     else
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, "White"));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "White"), ownerDetails));
                     }
                 }
+
                 var response = JsonConvert.SerializeObject(LikedVideosList);
                 return Ok(response);
             }
@@ -285,6 +289,7 @@ namespace TopTopServer.Controllers
             {
                 var request = HttpContext.Request;
                 var email = Request.Form["email"];
+                //Video details
                 var result = _context.Videos.ToList().Join
                     (
                         _context.Follows.ToList().Where(follow => follow.Follower == email),
@@ -293,18 +298,21 @@ namespace TopTopServer.Controllers
                         (video, userfollow) => video
                     ).ToList();
                 var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
-                List<VideosWithLikeState> LikedVideosList = new List<VideosWithLikeState>();
+                var userList = _context.Users.ToList();
+                List<VideoWithOwnerDetails> LikedVideosList = new List<VideoWithOwnerDetails>();
                 foreach(Video video in result)
                 {
+                    User ownerDetails = userList.Where(user => user.Email == video.Owner).FirstOrDefault();
                     if(likedVideos.Where(liked=>liked.Video==video.Url).Count()>0)
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, "Red"));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "Red"),ownerDetails));
                     } 
                     else
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, "White"));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "White"),ownerDetails));
                     }    
                 }    
+                //Owner Details
                 var response = JsonConvert.SerializeObject(LikedVideosList);
                 return Ok(response);
             }
