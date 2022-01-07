@@ -8,6 +8,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using TopTopServer.Models;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using System.IO;
 
 namespace TopTopServer.Controllers
 {
@@ -16,7 +19,7 @@ namespace TopTopServer.Controllers
     {
         private readonly TopTopDBContext _context;
         private FirebaseAuthProvider authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
-
+        private readonly string AzureConnectionString = "DefaultEndpointsProtocol=https;AccountName=toptop;AccountKey=H00fR4sQvDMxlwnZbaOCZxaNvYDnWZt9YPojFdQG2yayGaS5NWuWJO3R8a//Fys7F/zmn7dLHWWv3I6ctXhi3A==;EndpointSuffix=core.windows.net";
         public TopTopController(TopTopDBContext context)
         {
             _context = context;
@@ -164,6 +167,76 @@ namespace TopTopServer.Controllers
             catch (Exception)
             {
                 return BadRequest();
+            }
+        }
+
+        /*==============================================================================
+                            UPDATE USER PROFILE WITH AVATAR CHANGED
+        ================================================================================*/
+        [HttpPost]
+        [Route("UpdateProfileWithUploadAvatar")]
+        public async Task<IActionResult> UpdateProfileWithUploadAvatar()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var nickname = Request.Form["nickname"];
+                var bio = Request.Form["bio"];
+                var fileName = request.Form.Files[0].FileName;
+                using (var memoryStream = new MemoryStream())
+                {
+                    request.Form.Files[0].CopyTo(memoryStream);
+                    // Create a BlobServiceClient object which will be used to create a container client
+                    BlobServiceClient blobServiceClient = new BlobServiceClient(AzureConnectionString);
+                    // Create the container and return a container client object
+                    BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("toptop");
+                    // Get a reference to a blob
+                    BlobClient blobClient = containerClient.GetBlobClient(fileName);
+                    // Upload data from the local file
+                    memoryStream.Position = 0;
+                    await blobClient.UploadAsync(memoryStream);
+                    //Update database
+                    var result = _context.Users.ToList().FirstOrDefault(user => user.Email == email);
+                    result.NickName = nickname;
+                    result.Bio = bio;
+                    result.Avatar = blobClient.Uri.ToString();
+                    _context.Update(result);
+                    _context.SaveChanges();
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+        
+        /*==============================================================================
+                            UPDATE USER PROFILE WITHOUT AVATAR CHANGED
+        ================================================================================*/
+        [HttpPost]
+        [Route("UpdateProfileWithoutUploadAvatar")]
+        public IActionResult UpdateProfileWithoutUploadAvatar()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var nickname = Request.Form["nickname"];
+                var bio = Request.Form["bio"];
+                var avatar = Request.Form["avatar"];
+                var result = _context.Users.ToList().FirstOrDefault(user => user.Email == email);
+                result.NickName = nickname;
+                result.Bio = bio;
+                result.Avatar = avatar;
+                _context.Update(result);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
             }
         }
     }
