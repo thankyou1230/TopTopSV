@@ -171,7 +171,7 @@ namespace TopTopServer.Controllers
         }
 
         /*==============================================================================
-                            UPDATE USER PROFILE WITH AVATAR CHANGED
+                            UPDATE USER PROFILE WITH UPLOAD AVATAR
         ================================================================================*/
         [HttpPost]
         [Route("UpdateProfileWithUploadAvatar")]
@@ -213,7 +213,7 @@ namespace TopTopServer.Controllers
         }
         
         /*==============================================================================
-                            UPDATE USER PROFILE WITHOUT AVATAR CHANGED
+                            UPDATE USER PROFILE WITHOUT UPLOAD AVATAR
         ================================================================================*/
         [HttpPost]
         [Route("UpdateProfileWithoutUploadAvatar")]
@@ -233,6 +233,80 @@ namespace TopTopServer.Controllers
                 _context.Update(result);
                 _context.SaveChanges();
                 return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                                        GET NEWEST VIDEO LIST
+        ================================================================================*/
+        [HttpPost]
+        [Route("GetNewVideos")]
+        public IActionResult GetNewVideos()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var result = _context.Videos.ToList().Where(video => video.Owner != email).OrderBy(video=>video.UploadDate);
+                var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
+                List<VideosWithLikeState> LikedVideosList = new List<VideosWithLikeState>();
+                foreach (Video video in result)
+                {
+                    if (likedVideos.Where(liked => liked.Video == video.Url).Count() > 0)
+                    {
+                        LikedVideosList.Add(new VideosWithLikeState(video, 1));
+                    }
+                    else
+                    {
+                        LikedVideosList.Add(new VideosWithLikeState(video, 0));
+                    }
+                }
+                var response = JsonConvert.SerializeObject(LikedVideosList);
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                            GET FOLLOWING'S NEWEST VIDEO LIST
+        ================================================================================*/
+        [HttpPost]
+        [Route("GetNewFollowingVideos")]
+        public IActionResult GetNewFollowingVideos()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var result = _context.Videos.ToList().Join
+                    (
+                        _context.Follows.ToList().Where(follow => follow.Follower == email),
+                        video => video.Owner,
+                        userfollow => userfollow.Following,
+                        (video, userfollow) => video
+                    ).ToList();
+                var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
+                List<VideosWithLikeState> LikedVideosList = new List<VideosWithLikeState>();
+                foreach(Video video in result)
+                {
+                    if(likedVideos.Where(liked=>liked.Video==video.Url).Count()>0)
+                    {
+                        LikedVideosList.Add(new VideosWithLikeState(video, 1));
+                    } 
+                    else
+                    {
+                        LikedVideosList.Add(new VideosWithLikeState(video, 0));
+                    }    
+                }    
+                var response = JsonConvert.SerializeObject(LikedVideosList);
+                return Ok(response);
             }
             catch (Exception e)
             {
