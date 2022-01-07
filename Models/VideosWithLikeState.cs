@@ -7,7 +7,7 @@ namespace TopTopServer.Models
 {
     public class VideosWithLikeState
     {
-        public VideosWithLikeState(Video video, int liked)
+        public VideosWithLikeState(Video video, string liked)
         {
             this.Url = video.Url;
             this.Owner = video.Owner;
@@ -25,6 +25,6 @@ namespace TopTopServer.Models
         public int CommentCount { get; set; }
         public DateTime UploadDate { get; set; }
         public int IsPrivate { get; set; }
-        public int IsLiked { get; set; }
+        public string IsLiked { get; set; }
     }
 }

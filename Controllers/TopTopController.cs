@@ -258,11 +258,11 @@ namespace TopTopServer.Controllers
                 {
                     if (likedVideos.Where(liked => liked.Video == video.Url).Count() > 0)
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, 1));
+                        LikedVideosList.Add(new VideosWithLikeState(video, "Red"));
                     }
                     else
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, 0));
+                        LikedVideosList.Add(new VideosWithLikeState(video, "White"));
                     }
                 }
                 var response = JsonConvert.SerializeObject(LikedVideosList);
@@ -298,11 +298,11 @@ namespace TopTopServer.Controllers
                 {
                     if(likedVideos.Where(liked=>liked.Video==video.Url).Count()>0)
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, 1));
+                        LikedVideosList.Add(new VideosWithLikeState(video, "Red"));
                     } 
                     else
                     {
-                        LikedVideosList.Add(new VideosWithLikeState(video, 0));
+                        LikedVideosList.Add(new VideosWithLikeState(video, "White"));
                     }    
                 }    
                 var response = JsonConvert.SerializeObject(LikedVideosList);
