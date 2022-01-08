@@ -12,6 +12,7 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using System.IO;
 using User = TopTopServer.Models.User;
+using System.Globalization;
 
 namespace TopTopServer.Controllers
 {
@@ -344,6 +345,78 @@ namespace TopTopServer.Controllers
                     );
                 var response = JsonConvert.SerializeObject(result);
                 return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                            ADD VIDEO'S COMMENT
+        ================================================================================*/
+        [HttpPost]
+        [Route("AddComment")]
+        public async Task<IActionResult> AddComment()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var commenter = Request.Form["commenter"];
+                var videourl = Request.Form["videourl"];
+                var content = Request.Form["content"];
+                var isOwner = Request.Form["isowner"];
+                //Comment details
+                DateTime thisDate = DateTime.UtcNow.AddHours(7);
+                var addRequest = await _context.Comments.AddAsync(new Comment(commenter,videourl,content,thisDate,isOwner));
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                            LIKE VIDEO
+        ================================================================================*/
+        [HttpPost]
+        [Route("LikeVideo")]
+        public async Task<IActionResult> LikeVideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var user = Request.Form["user"];
+                var videourl = Request.Form["videourl"];
+                //Comment details
+                var addRequest = await _context.Likes.AddAsync(new Like(user,videourl));
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                            UNLIKE VIDEO
+        ================================================================================*/
+        [HttpPost]
+        [Route("UnLikeVideo")]
+        public IActionResult UnLikeVideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var user = Request.Form["user"];
+                var videourl = Request.Form["videourl"];
+                //Comment details
+                var addRequest = _context.Likes.Remove(new Like(user, videourl));
+                _context.SaveChanges();
+                return Ok();
             }
             catch (Exception e)
             {

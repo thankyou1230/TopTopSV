@@ -33,7 +33,12 @@ namespace TopTopServer
                 u.User,
                 u.Video
             });
-            modelBuilder.Entity<Comment>().HasNoKey();
+            modelBuilder.Entity<Comment>().HasKey(u => new
+            {
+                u.User,
+                u.Video,
+                u.CommentTime
+            });
             modelBuilder.Entity<Comment>().Property<string>("CommentContent").IsUnicode(true);
             modelBuilder.Entity<Video>().Property<string>("Title").IsUnicode(true);
         }
