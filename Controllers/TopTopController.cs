@@ -20,7 +20,7 @@ namespace TopTopServer.Controllers
     {
         private readonly TopTopDBContext _context;
         private FirebaseAuthProvider authProvider = new FirebaseAuthProvider(new FirebaseConfig("AIzaSyAeobHFw2yHBP0bgrRCTQMRyv6F3BKjnx8"));
-        private readonly string AzureConnectionString = "DefaultEndpointsProtocol=https;AccountName=toptop;AccountKey=H00fR4sQvDMxlwnZbaOCZxaNvYDnWZt9YPojFdQG2yayGaS5NWuWJO3R8a//Fys7F/zmn7dLHWWv3I6ctXhi3A==;EndpointSuffix=core.windows.net";
+        private readonly string AzureConnectionString = "DefaultEndpointsProtocol=https;AccountName=toptop2;AccountKey=Sc9YQKUCsoya0vINewPQHN8MjlnjjF0z8K42xGdN6ZthKPY2QxJde9FFDG+wFvfHbXxyQkV6PcVj4W0kYf7HWA==;EndpointSuffix=core.windows.net";
         public TopTopController(TopTopDBContext context)
         {
             _context = context;
@@ -252,7 +252,7 @@ namespace TopTopServer.Controllers
             {
                 var request = HttpContext.Request;
                 var email = Request.Form["email"];
-                var result = _context.Videos.ToList().Where(video => video.Owner != email).OrderBy(video=>video.UploadDate);
+                var result = _context.Videos.ToList().Where(video => video.Owner != email && video.IsPrivate==0).OrderByDescending(video=>video.UploadDate);
                 var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
                 var userList = _context.Users.ToList();
                 List<VideoWithOwnerDetails> LikedVideosList = new List<VideoWithOwnerDetails>();
@@ -290,7 +290,7 @@ namespace TopTopServer.Controllers
                 var request = HttpContext.Request;
                 var email = Request.Form["email"];
                 //Video details
-                var result = _context.Videos.ToList().Join
+                var result = _context.Videos.ToList().Where(video=>video.IsPrivate==0).Join
                     (
                         _context.Follows.ToList().Where(follow => follow.Follower == email),
                         video => video.Owner,
@@ -314,6 +314,35 @@ namespace TopTopServer.Controllers
                 }    
                 //Owner Details
                 var response = JsonConvert.SerializeObject(LikedVideosList);
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
+                            GET VIDEO'S COMMENTS
+        ================================================================================*/
+        [HttpPost]
+        [Route("GetVideoComments")]
+        public IActionResult GetVideoComments()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var videoUrl = Request.Form["videourl"];
+                //Comment details
+                var comments = _context.Comments.ToList().Where(comment => comment.Video == videoUrl).OrderByDescending(video=>video.CommentTime);
+                var result = comments.Join
+                    (
+                        _context.Users,
+                        comment => comment.User,
+                        user => user.Email,
+                        (comment, user) => new { comment, user}
+                    );
+                var response = JsonConvert.SerializeObject(result);
                 return Ok(response);
             }
             catch (Exception e)

@@ -34,6 +34,8 @@ namespace TopTopServer
                 u.Video
             });
             modelBuilder.Entity<Comment>().HasNoKey();
+            modelBuilder.Entity<Comment>().Property<string>("CommentContent").IsUnicode(true);
+            modelBuilder.Entity<Video>().Property<string>("Title").IsUnicode(true);
         }
     }
 }
