@@ -306,11 +306,11 @@ namespace TopTopServer.Controllers
                     User ownerDetails = userList.Where(user => user.Email == video.Owner).FirstOrDefault();
                     if(likedVideos.Where(liked=>liked.Video==video.Url).Count()>0)
                     {
-                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "Red"),ownerDetails));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "True"),ownerDetails));
                     } 
                     else
                     {
-                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "White"),ownerDetails));
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "False"),ownerDetails));
                     }    
                 }    
                 //Owner Details
@@ -379,7 +379,7 @@ namespace TopTopServer.Controllers
         }
 
         /*==============================================================================
-                            LIKE VIDEO
+                                     LIKE VIDEO
         ================================================================================*/
         [HttpPost]
         [Route("LikeVideo")]
