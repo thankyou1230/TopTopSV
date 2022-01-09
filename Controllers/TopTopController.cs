@@ -243,6 +243,44 @@ namespace TopTopServer.Controllers
         }
 
         /*==============================================================================
+                                        GET SPECIFED VIDEO
+        ================================================================================*/
+        [HttpPost]
+        [Route("GetSpecifedVideo")]
+        public IActionResult GetSpecifedVideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var videoUrl = Request.Form["videourl"];
+                var result = _context.Videos.ToList().Where(video => video.Url == videoUrl);
+                var likedVideos = _context.Likes.ToList().Where(like => like.User == email);
+                var userList = _context.Users.ToList();
+                List<VideoWithOwnerDetails> LikedVideosList = new List<VideoWithOwnerDetails>();
+                foreach (Video video in result)
+                {
+                    User ownerDetails = userList.Where(user => user.Email == video.Owner).FirstOrDefault();
+                    if (likedVideos.Where(liked => liked.Video == video.Url).Count() > 0)
+                    {
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "True"), ownerDetails));
+                    }
+                    else
+                    {
+                        LikedVideosList.Add(new VideoWithOwnerDetails(new VideosWithLikeState(video, "False"), ownerDetails));
+                    }
+                }
+
+                var response = JsonConvert.SerializeObject(LikedVideosList);
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        /*==============================================================================
                                         GET NEWEST VIDEO LIST
         ================================================================================*/
         [HttpPost]
