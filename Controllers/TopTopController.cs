@@ -407,6 +407,9 @@ namespace TopTopServer.Controllers
                 //Comment details
                 DateTime thisDate = DateTime.UtcNow.AddHours(7);
                 var addRequest = await _context.Comments.AddAsync(new Comment(commenter,videourl,content,thisDate,isOwner));
+                var plusComment = await _context.Videos.FindAsync(videourl);
+                plusComment.CommentCount += 1;
+                _context.Update(plusComment);
                 _context.SaveChanges();
                 return Ok();
             }
@@ -430,6 +433,9 @@ namespace TopTopServer.Controllers
                 var videourl = Request.Form["videourl"];
                 //Comment details
                 var addRequest = await _context.Likes.AddAsync(new Like(user,videourl));
+                var plusLikeRequest = await _context.Videos.FindAsync(videourl);
+                plusLikeRequest.LikeCount += 1;
+                _context.Update(plusLikeRequest);
                 _context.SaveChanges();
                 return Ok();
             }
@@ -444,7 +450,7 @@ namespace TopTopServer.Controllers
         ================================================================================*/
         [HttpPost]
         [Route("UnLikeVideo")]
-        public IActionResult UnLikeVideo()
+        public async Task<IActionResult> UnLikeVideo()
         {
             try
             {
@@ -453,6 +459,9 @@ namespace TopTopServer.Controllers
                 var videourl = Request.Form["videourl"];
                 //Comment details
                 var addRequest = _context.Likes.Remove(new Like(user, videourl));
+                var plusLikeRequest = await _context.Videos.FindAsync(videourl);
+                plusLikeRequest.LikeCount -= 1;
+                _context.Update(plusLikeRequest);
                 _context.SaveChanges();
                 return Ok();
             }
