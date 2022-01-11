@@ -482,11 +482,12 @@ namespace TopTopServer.Controllers
             {
                 var request = HttpContext.Request;
                 string searchText = Request.Form["searchtext"];
+                string currentUser = Request.Form["user"];
                 searchText = searchText.ToLower();
                 var userTable = await _context.Users.ToListAsync();
                 var followTable = await _context.Follows.ToListAsync();
                 //Get matched user result
-                var userQuery = userTable.Where(user => user.NickName.ToLower().Contains(searchText)).OrderByDescending(user => StringSimilarityScore(user.NickName,searchText));
+                var userQuery = userTable.Where(user => user.NickName.ToLower().Contains(searchText) && user.Email!=currentUser).OrderByDescending(user => StringSimilarityScore(user.NickName,searchText));
                 List<MatchedUserReasult> userResult = new List<MatchedUserReasult>();
                 foreach (User matchedUser in userQuery)
                 {
@@ -494,7 +495,7 @@ namespace TopTopServer.Controllers
                     userResult.Add(new MatchedUserReasult(matchedUser, countFollower));
                 }    
                 //Get matched vieo result
-                var videoQuery = _context.Videos.ToList().Where(video => video.Title.ToLower().Contains(searchText)).OrderByDescending(video=>StringSimilarityScore(video.Title,searchText));
+                var videoQuery = _context.Videos.ToList().Where(video => video.Title.ToLower().Contains(searchText) && video.Owner != currentUser).OrderByDescending(video=>StringSimilarityScore(video.Title,searchText));
                 List<MatchedVideoResult> videoResult = new List<MatchedVideoResult>();
                 foreach (Video matchedVideo in videoQuery)
                 {
