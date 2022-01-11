@@ -470,5 +470,54 @@ namespace TopTopServer.Controllers
                 return BadRequest(e);
             }
         }
+
+        /*==============================================================================
+                                            GET SEARCH RESULT
+        ================================================================================*/
+        [HttpPost]
+        [Route("Search")]
+        public async Task<IActionResult> Search()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                string searchText = Request.Form["searchtext"];
+                searchText = searchText.ToLower();
+                var userTable = await _context.Users.ToListAsync();
+                var followTable = await _context.Follows.ToListAsync();
+                //Get matched user result
+                var userQuery = userTable.Where(user => user.NickName.ToLower().Contains(searchText)).OrderByDescending(user => StringSimilarityScore(user.NickName,searchText));
+                List<MatchedUserReasult> userResult = new List<MatchedUserReasult>();
+                foreach (User matchedUser in userQuery)
+                {
+                    var countFollower = followTable.Where(follow => follow.Following == matchedUser.Email).Count();
+                    userResult.Add(new MatchedUserReasult(matchedUser, countFollower));
+                }    
+                //Get matched vieo result
+                var videoQuery = _context.Videos.ToList().Where(video => video.Title.ToLower().Contains(searchText)).OrderByDescending(video=>StringSimilarityScore(video.Title,searchText));
+                List<MatchedVideoResult> videoResult = new List<MatchedVideoResult>();
+                foreach (Video matchedVideo in videoQuery)
+                {
+                    var ownerProfile = userTable.Where(user => user.Email == matchedVideo.Owner).FirstOrDefault();
+                    videoResult.Add(new MatchedVideoResult(matchedVideo, ownerProfile));
+                }    
+
+                var response = JsonConvert.SerializeObject(new { UserResult=userResult, VideoResult=videoResult});
+                return Ok(response);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+        double StringSimilarityScore(string name, string searchString)
+        {
+            if (name.Contains(searchString))
+            {
+                return (double)searchString.Length / (double)name.Length;
+            }
+
+            return 0;
+        }
     }
 }
