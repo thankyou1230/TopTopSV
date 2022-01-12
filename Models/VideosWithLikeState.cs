@@ -17,6 +17,7 @@ namespace TopTopServer.Models
             this.LikeCount = video.LikeCount;
             this.CommentCount = video.CommentCount;
             this.IsLiked = liked;
+            this.ThumbnailUrl = video.ThumbnailUrl;
         }
         public string Url { get; set; }
         public string Owner { get; set; }
@@ -24,6 +25,7 @@ namespace TopTopServer.Models
         public int LikeCount { get; set; }
         public int CommentCount { get; set; }
         public DateTime UploadDate { get; set; }
+        public string ThumbnailUrl { get; set; }
         public int IsPrivate { get; set; }
         public string IsLiked { get; set; }
     }

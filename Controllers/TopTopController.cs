@@ -13,6 +13,7 @@ using Azure.Storage.Blobs.Models;
 using System.IO;
 using User = TopTopServer.Models.User;
 using System.Globalization;
+using Microsoft.AspNetCore.Http;
 
 namespace TopTopServer.Controllers
 {
@@ -519,6 +520,56 @@ namespace TopTopServer.Controllers
             }
 
             return 0;
+        }
+
+        /*==============================================================================
+                                                 UPLOAD VIDEO
+        ================================================================================*/
+        [HttpPost]
+        [Route("UploadVideo")]
+        public async Task<IActionResult> Uploadvideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["owner"];
+                var title = Request.Form["title"];
+                var video = request.Form.Files[0].FileName;
+                var thumbnail = request.Form.Files[1].FileName;
+                //Get thumbnail from video
+
+                using (MemoryStream memoryStream = new MemoryStream(), thumbnailStream= new MemoryStream())
+                {
+                    request.Form.Files[0].CopyTo(memoryStream);
+                    request.Form.Files[1].CopyTo(thumbnailStream);
+                    // Create a BlobServiceClient object which will be used to create a container client
+                    BlobServiceClient blobServiceClient = new BlobServiceClient(AzureConnectionString);
+                    // Create the container and return a container client object
+                    BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("toptop");
+                    // Get a reference to a blob
+                    BlobClient blobClient = containerClient.GetBlobClient(video);
+                    BlobClient thumbnailBlob = containerClient.GetBlobClient(thumbnail);
+                    // Upload data from the local file
+                    memoryStream.Position = 0;
+                    thumbnailStream.Position = 0;
+                    await blobClient.UploadAsync(memoryStream);
+                    await thumbnailBlob.UploadAsync(thumbnailStream);
+                    //Update database
+                    var newVideo = new Video(blobClient.Uri.ToString(), email, title, DateTime.UtcNow.AddHours(7),thumbnailBlob.Uri.ToString(),0);
+                    _context.Videos.Add(newVideo);
+                    _context.SaveChanges();
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        public void GenerateThumbnail(IFormFile video)
+        {
+            
         }
     }
 }

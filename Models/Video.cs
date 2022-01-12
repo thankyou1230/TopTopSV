@@ -10,7 +10,7 @@ namespace TopTopServer.Models
     [Table("Video")]
     public class Video
     {
-        public Video(string url, string owner, string title, DateTime uploadDate, int isPrivate, int likeCount = 0, int commentCount = 0)
+        public Video(string url, string owner, string title, DateTime uploadDate,string ThumbnailUrl, int isPrivate, int likeCount = 0, int commentCount = 0)
         {
             this.Url = url;
             this.Owner = owner;
@@ -19,6 +19,7 @@ namespace TopTopServer.Models
             this.IsPrivate = isPrivate;
             this.LikeCount = likeCount;
             this.CommentCount = commentCount;
+            this.ThumbnailUrl = ThumbnailUrl;
         }
         [Key]
         public string Url { get; set; }
@@ -27,6 +28,7 @@ namespace TopTopServer.Models
         public int LikeCount { get; set; }
         public int CommentCount { get; set; }
         public DateTime UploadDate { get; set; }
+        public string ThumbnailUrl { get; set; }
         public int IsPrivate { get; set; }
     }
 }
