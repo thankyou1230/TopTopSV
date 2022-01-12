@@ -567,9 +567,50 @@ namespace TopTopServer.Controllers
             }
         }
 
-        public void GenerateThumbnail(IFormFile video)
+        /*==============================================================================
+                                      Hide Video
+        ================================================================================*/
+        [HttpPost]
+        [Route("HideVideo")]
+        public async Task<IActionResult> HideVideo()
         {
-            
+            try
+            {
+                var request = HttpContext.Request;
+                var videoUrl = Request.Form["url"];
+                var record = await _context.Videos.FindAsync(videoUrl);
+                record.IsPrivate = 1;
+                _context.Update(record);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        /*==============================================================================
+                                      Public Video
+        ================================================================================*/
+        [HttpPost]
+        [Route("PublicVideo")]
+        public async Task<IActionResult> PublicVideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var videoUrl = Request.Form["url"];
+                var record = await _context.Videos.FindAsync(videoUrl);
+                record.IsPrivate = 0;
+                _context.Update(record);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
         }
     }
 }
