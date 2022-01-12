@@ -141,6 +141,7 @@ namespace TopTopServer.Controllers
                 var followTo = Request.Form["FollowTo"];
                 //send follow reuqest
                 var followRequest = await _context.Follows.AddAsync(new Follow(followFrom, followTo));
+                AddNoti(followFrom, followTo).ConfigureAwait(false);
                 _context.SaveChanges();
                 return Ok();
             }
@@ -148,6 +149,17 @@ namespace TopTopServer.Controllers
             {
                 return BadRequest();
             }
+        }
+        public async Task AddNoti(string follower, string followTo)
+        {
+            var followerUser = _context.Users.Find(follower).NickName;
+            var noti = _context.Notifications.AddAsync(new Notification()
+            {
+                NotiFrom = follower,
+                NotiTo = followTo,
+                NotiTime = DateTime.UtcNow.AddHours(7),
+                NotiContent = followerUser + " đã bắt đầu theo dõi bạn."
+            });
         }
 
         /*==============================================================================
@@ -606,6 +618,26 @@ namespace TopTopServer.Controllers
                 _context.Update(record);
                 _context.SaveChanges();
                 return Ok();
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+        /*==============================================================================
+                                      Get notification
+        ================================================================================*/
+        [HttpPost]
+        [Route("FetchNoti")]
+        public async Task<IActionResult> FetchNoti()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var email = Request.Form["email"];
+                var records = await _context.Notifications.ToListAsync();
+                var notis = records.Where(noti => noti.NotiTo == email);
+                return Ok(notis);
             }
             catch (Exception)
             {

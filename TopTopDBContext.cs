@@ -16,6 +16,7 @@ namespace TopTopServer
         public DbSet<Comment> Comments { set; get; }
         public DbSet<Like> Likes { set; get; }
         public DbSet<Follow> Follows { set; get; }
+        public DbSet<Notification> Notifications { set; get; }
         public TopTopDBContext(DbContextOptions<TopTopDBContext> options) : base(options)
         {
             // Phương thức khởi tạo này chứa options để kết nối đến MS SQL Server
@@ -38,6 +39,12 @@ namespace TopTopServer
                 u.User,
                 u.Video,
                 u.CommentTime
+            });
+            modelBuilder.Entity<Notification>().HasKey(u => new
+            {
+                u.NotiTo,
+                u.NotiTime,
+                u.NotiFrom
             });
             modelBuilder.Entity<Comment>().Property<string>("CommentContent").IsUnicode(true);
             modelBuilder.Entity<Video>().Property<string>("Title").IsUnicode(true);
