@@ -141,12 +141,13 @@ namespace TopTopServer.Controllers
                 var avatar = Request.Form["avatar"];
                 var nickname = Request.Form["nickname"];
                 //main Profile
-                var profile = await _context.Users.FindAsync(email);
+                User profile = await _context.Users.FindAsync(email);
                 if (profile == null)
                 {
                     var newUser = new User(email, avatar, nickname, "", DateTime.UtcNow.AddHours(7), 0);
                     _context.Add(newUser);
                     _context.SaveChanges();
+                    profile = newUser;
                 }
                 //follower
                 var followersList = await _context.Follows.ToListAsync();
