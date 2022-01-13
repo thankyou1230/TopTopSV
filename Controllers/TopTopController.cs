@@ -196,7 +196,7 @@ namespace TopTopServer.Controllers
         }
 
         /*==============================================================================
-                             GET A USER'S PROFILE BY EMAIL
+                             FOLLOW USER
         ================================================================================*/
         [HttpPost]
         [Route("FollowRequest")]
@@ -231,7 +231,7 @@ namespace TopTopServer.Controllers
         }
 
         /*==============================================================================
-                             GET A USER'S PROFILE BY EMAIL
+                             UNFOLLOW USER
         ================================================================================*/
         [HttpPost]
         [Route("UnfollowRequest")]

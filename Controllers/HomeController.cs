@@ -54,6 +54,7 @@ namespace TopTopServer.Controllers
                 }
                 else if (!authenticator.User.IsEmailVerified)
                 {
+                    authProvider.SendEmailVerificationAsync(authenticator);
                     return Unauthorized();
                 }
                 else
