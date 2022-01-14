@@ -692,6 +692,7 @@ namespace TopTopServer.Controllers
                 return BadRequest();
             }
         }
+
         /*==============================================================================
                                       Get notification
         ================================================================================*/
@@ -706,6 +707,28 @@ namespace TopTopServer.Controllers
                 var records = await _context.Notifications.ToListAsync();
                 var notis = records.Where(noti => noti.NotiTo == email);
                 return Ok(notis);
+            }
+            catch (Exception)
+            {
+                return BadRequest();
+            }
+        }
+
+        /*==============================================================================
+                                      Delete Video
+        ================================================================================*/
+        [HttpPost]
+        [Route("DeleteVideo")]
+        public async Task<IActionResult> DeleteVideo()
+        {
+            try
+            {
+                var request = HttpContext.Request;
+                var video = Request.Form["url"];
+                var record = await _context.Videos.FindAsync(video);
+                _context.Videos.Remove(record);
+                _context.SaveChanges();
+                return Ok();
             }
             catch (Exception)
             {

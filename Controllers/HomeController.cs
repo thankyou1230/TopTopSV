@@ -68,6 +68,7 @@ namespace TopTopServer.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpPost]
         [Route("ResetPassword")]
         public async Task<IActionResult> ResetPassword()
@@ -85,6 +86,8 @@ namespace TopTopServer.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
         
 
     }
